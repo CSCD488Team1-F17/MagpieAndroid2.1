@@ -20,7 +20,9 @@
 
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
-
+    <string name="map_view">Map View</string>
+    <string name="share">Share</string>
+    <string name="landmark">_landmark</string>
     <!--<string name="default_web_client_id">1051549843498-kfetusesfc5drgo9bv9p93imug1oj6na.apps.googleusercontent.com</string>
         This is actually given to us already! No need to specifically declare. Leaving this here for future reference. :)
     -->
