@@ -1,6 +1,6 @@
 build
-.idea
+#.idea
 app\build
 
 .class
-.java
+#.java
