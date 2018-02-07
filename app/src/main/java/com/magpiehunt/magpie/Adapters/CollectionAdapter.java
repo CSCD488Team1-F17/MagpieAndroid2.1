@@ -1,17 +1,27 @@
 package com.magpiehunt.magpie.Adapters;
 
+import android.content.Context;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.magpiehunt.magpie.Database.MagpieDatabase;
 import com.magpiehunt.magpie.Entities.Collection;
+import com.magpiehunt.magpie.Entities.Landmark;
 import com.magpiehunt.magpie.R;
+import com.magpiehunt.magpie.WebClient.ApiService;
+import com.magpiehunt.magpie.WebClient.ServiceGenerator;
 
 import java.util.List;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 /**
  * Created by Blake Impecoven on 1/22/18.
@@ -29,8 +39,10 @@ import java.util.List;
 public class CollectionAdapter extends RecyclerView.Adapter<CollectionAdapter.CollectionHolder> {
 
     private static final String TAG = "LandmarkAdapter";
+    private final Context context;
 
     private List<Collection> collectionList;
+    private String fragmentTag;
 
     public class CollectionHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
@@ -48,14 +60,17 @@ public class CollectionAdapter extends RecyclerView.Adapter<CollectionAdapter.Co
         // fields for CardView (Expanded)
         private TextView description;
         private TextView rating;
+        private Button addBtn;
+        private String fragmentTag;
 
-
-        public CollectionHolder(View itemView) {
+        public CollectionHolder(View itemView, String fragmentTag) {
             super(itemView);
             this.collectionTitle = (TextView)itemView.findViewById(R.id.tvTitle);
             this.collectionAbbreviation = (TextView)itemView.findViewById(R.id.tvAbbreviation);
             this.imgThumb = (ImageView)itemView.findViewById(R.id.img_thumb);
             this.imgArrow = (ImageView)itemView.findViewById(R.id.expandArrow);
+            this.addBtn = (Button)itemView.findViewById(R.id.addBtn);
+            this.fragmentTag = fragmentTag;
         }//end DVC
 
         public void setData(Collection currentObject, int position) {
@@ -72,14 +87,17 @@ public class CollectionAdapter extends RecyclerView.Adapter<CollectionAdapter.Co
 
             this.position = position;
             this.currentObject = currentObject;
+            if(fragmentTag.equals("SearchCollectionsFrag"))
+                this.addBtn.setVisibility(View.VISIBLE);
 
-//            setListeners(); // uncomment when click functionality implemented.
+            setListeners(); // uncomment when click functionality implemented.
         }//end setData
 
         public void setListeners() {
             imgArrow.setOnClickListener(CollectionHolder.this);
             //TODO: change this listener to respond to a click of the whole card?
             imgThumb.setOnClickListener(CollectionHolder.this);
+            addBtn.setOnClickListener(CollectionHolder.this);
         }//end setListeners
 
         @Override
@@ -87,6 +105,8 @@ public class CollectionAdapter extends RecyclerView.Adapter<CollectionAdapter.Co
             switch (v.getId()) {
                 case R.id.expandArrow:
                     //TODO: implement drop-down functionality
+
+
                     break;
 
                 case R.id.img_thumb:
@@ -97,7 +117,9 @@ public class CollectionAdapter extends RecyclerView.Adapter<CollectionAdapter.Co
 //                case delete item:
 //                    removeItem(position);
 //                    break;
-
+                case R.id.addBtn:
+                    addCollectionToDB(this.currentObject);
+                    break;
                 default:
                     break;
             }//end switch
@@ -119,8 +141,10 @@ public class CollectionAdapter extends RecyclerView.Adapter<CollectionAdapter.Co
 
     }//end inner class: CollectionHolder
 
-    public CollectionAdapter(List<Collection> collectionList) {
+    public CollectionAdapter(List<Collection> collectionList, String fragmentTag, Context context) {
         this.collectionList = collectionList;
+        this.fragmentTag = fragmentTag;
+        this.context = context;
     }//end DVC
 
     // Create new views (invoked by the layout manager)
@@ -130,7 +154,7 @@ public class CollectionAdapter extends RecyclerView.Adapter<CollectionAdapter.Co
         View view = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.collection_card, parent, false);
 
-        return new CollectionHolder(view);
+        return new CollectionHolder(view, fragmentTag);
     }//end onCreateViewHolder
 
     // Replace the contents of a view (invoked by the layout manager)
@@ -146,6 +170,34 @@ public class CollectionAdapter extends RecyclerView.Adapter<CollectionAdapter.Co
     @Override
     public int getItemCount() {
         return collectionList.size();
+    }
+    private void addCollectionToDB(Collection c)
+    {
+        final MagpieDatabase db = MagpieDatabase.getMagpieDatabase(context);
+        db.collectionDao().addCollection(c);
+
+        ApiService apiService = ServiceGenerator.createService(ApiService.class);
+
+        Call<List<Landmark>> call = apiService.getLandmarks(c.getCID());
+
+        call.enqueue(new Callback<List<Landmark>>() {
+            @Override
+            public void onResponse(Call<List<Landmark>> call, Response<List<Landmark>> response) {
+                List<Landmark> landmarks = response.body();
+                if(landmarks!= null) {
+                    for (Landmark l : landmarks)
+                        db.landmarkDao().addLandmark(l);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<List<Landmark>> call, Throwable t) {
+
+            }
+        });
+
+        List<Collection> collections = db.collectionDao().getCollections();
+
     }
 
 }//end CollectionAdapter

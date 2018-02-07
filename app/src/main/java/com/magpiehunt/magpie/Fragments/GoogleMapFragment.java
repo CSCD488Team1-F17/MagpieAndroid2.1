@@ -1,6 +1,7 @@
 package com.magpiehunt.magpie.Fragments;
 
 import android.Manifest;
+import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.content.Context;
@@ -10,10 +11,9 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Bundle;
-import android.app.Fragment;
-import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -22,12 +22,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
-import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationRequest;
-import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.LocationSource;
 import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.UiSettings;
@@ -35,7 +32,6 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.magpiehunt.magpie.Helper.GPSTracker;
-import com.magpiehunt.magpie.MainActivity;
 import com.magpiehunt.magpie.R;
 
 import java.util.ArrayList;
@@ -103,6 +99,10 @@ public class GoogleMapFragment extends Fragment
         //setContentView(R.layout.activity_main);
         currLoc = new Location((LocationManager.GPS_PROVIDER));
         setHasOptionsMenu(true);
+
+
+        Toolbar toolbar = getActivity().findViewById(R.id.my_toolbar);
+        toolbar.setTitle("Map View");
 
         ActivityCompat.requestPermissions(getActivity(),
                 new java.lang.String[]{android.Manifest.permission.ACCESS_FINE_LOCATION}, 1);

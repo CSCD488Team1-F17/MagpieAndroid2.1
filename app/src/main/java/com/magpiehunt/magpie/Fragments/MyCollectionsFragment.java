@@ -4,13 +4,10 @@ import android.app.Fragment;
 import android.content.Context;
 import android.net.Uri;
 import android.os.Bundle;
-
-import android.app.Fragment;
 import android.support.v7.widget.DefaultItemAnimator;
-import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-
+import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -43,6 +40,7 @@ public class MyCollectionsFragment extends Fragment {
     protected List<Collection> mDataset;
     protected MagpieDatabase magpieDatabase;
 
+
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
@@ -69,20 +67,22 @@ public class MyCollectionsFragment extends Fragment {
      * @return A new instance of fragment MyCollectionsFragment.
      */
 //    // TODO: Rename and change types and number of parameters
-//    public static MyCollectionsFragment newInstance() {
-//        MyCollectionsFragment fragment = new MyCollectionsFragment();
-//        Bundle args = new Bundle();
-//        return fragment;
-//    }
+    public static MyCollectionsFragment newInstance() {
+        MyCollectionsFragment fragment = new MyCollectionsFragment();
+        Bundle args = new Bundle();
+        return fragment;
+    }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        magpieDatabase = MagpieDatabase.getMagpieDatabase(this.getActivity());
         initializeData();
         if (getArguments() != null) {
             mParam1 = getArguments().getString(ARG_PARAM1);
             mParam2 = getArguments().getString(ARG_PARAM2);
         }
+
     }
 
     @Override
@@ -93,13 +93,18 @@ public class MyCollectionsFragment extends Fragment {
         View rootView = inflater.inflate(R.layout.fragment_my_collections, container, false);
         rootView.setTag(TAG);
 
+        Toolbar toolbar = getActivity().findViewById(R.id.my_toolbar);
+        toolbar.setTitle("My Collections");
+
         mRecyclerView = (RecyclerView) rootView.findViewById(R.id.recyclerView);
 
         mLayoutManager = new LinearLayoutManager(getActivity());
 
         setRecyclerViewLayoutManager();
 
-        mModelAdapter = new CollectionAdapter(mDataset);
+        MagpieDatabase db = MagpieDatabase.getMagpieDatabase(getActivity());
+        List<Collection> collections = db.collectionDao().getCollections();
+        mModelAdapter = new CollectionAdapter(collections, MyCollectionsFragment.TAG, this.getActivity());
         // Set the adapter for RecyclerView.
         mRecyclerView.setAdapter(mModelAdapter);
 
@@ -165,6 +170,8 @@ public class MyCollectionsFragment extends Fragment {
     private void initializeData() {
         mDataset = new ArrayList<>();
 
+        mDataset = MagpieDatabase.getMagpieDatabase(this.getActivity()).collectionDao().getCollections();
+/*
         Collection testCollection = new Collection();
         testCollection.setName("Test Walk Talk");
         testCollection.setAbbreviation("TWT");
@@ -204,5 +211,6 @@ public class MyCollectionsFragment extends Fragment {
         testCollection.setName("The Last Walk");
         testCollection.setAbbreviation("TLW");
         mDataset.add(testCollection);
+*/
     }//end
 }

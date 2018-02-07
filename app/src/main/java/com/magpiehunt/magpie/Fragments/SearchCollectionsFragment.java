@@ -4,11 +4,16 @@ import android.app.Fragment;
 import android.content.Context;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.v7.widget.DefaultItemAnimator;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.magpiehunt.magpie.Adapters.CollectionAdapter;
 import com.magpiehunt.magpie.Database.MagpieDatabase;
 import com.magpiehunt.magpie.Entities.Collection;
 import com.magpiehunt.magpie.Entities.Landmark;
@@ -39,6 +44,12 @@ public class SearchCollectionsFragment extends Fragment {
 
     private static final String TAG = "SearchCollectionsFrag";
 
+
+    protected RecyclerView mRecyclerView;
+    protected CollectionAdapter mModelAdapter;
+    protected RecyclerView.LayoutManager mLayoutManager;
+    protected List<Collection> collections;
+    protected Context context;
 
     // TODO: Rename and change types of parameters
     private String mParam1;
@@ -71,6 +82,7 @@ public class SearchCollectionsFragment extends Fragment {
             mParam1 = getArguments().getString(ARG_PARAM1);
             mParam2 = getArguments().getString(ARG_PARAM2);
         }
+        this.context = this.getActivity();
 
 
 
@@ -82,16 +94,31 @@ public class SearchCollectionsFragment extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
 
-        View view = inflater.inflate(R.layout.fragment_search_collections, container, false);
+        View rootView = inflater.inflate(R.layout.fragment_search_collections, container, false);
 
+        //Toolbar myToolbar = rootView.findViewById(R.id.my_toolbar);
+        //myToolbar.setTitle("Add a Collection");
+
+        Toolbar toolbar = getActivity().findViewById(R.id.my_toolbar);
+        toolbar.setTitle("Add a Collection");
+
+        //init list
+        mRecyclerView = rootView.findViewById(R.id.searchView);
+        mLayoutManager = new LinearLayoutManager(getActivity());
+        setRecyclerViewLayoutManager();
+
+        //get data from api
         ApiService apiService = ServiceGenerator.createService(ApiService.class);
         Call<List<Collection>> call = apiService.getCollections();
-
-
         call.enqueue(new Callback<List<Collection>>() {
             @Override
             public void onResponse(Call<List<Collection>> call, Response<List<Collection>> response) {
-                List<Collection> collections = response.body();
+                collections = response.body();
+               // collections = callCollections;
+                mModelAdapter = new CollectionAdapter(collections, SearchCollectionsFragment.TAG, context);
+                // Set the adapter for RecyclerView.
+                mRecyclerView.setAdapter(mModelAdapter);
+                mRecyclerView.setItemAnimator(new DefaultItemAnimator());
 
             }
 
@@ -102,7 +129,7 @@ public class SearchCollectionsFragment extends Fragment {
             }
         });
 
-        return view;
+        return rootView;
     }
 
 
@@ -131,7 +158,22 @@ public class SearchCollectionsFragment extends Fragment {
         });
 
 
+        List<Collection> collections = db.collectionDao().getCollections();
+
+
     }
+    public void setRecyclerViewLayoutManager() {
+        int scrollPosition = 0;
+
+        // If a layout manager has already been set, get current scroll position.
+        if (mRecyclerView.getLayoutManager() != null) {
+            scrollPosition = ((LinearLayoutManager) mRecyclerView.getLayoutManager()).findFirstCompletelyVisibleItemPosition();
+        }//end if
+
+        mLayoutManager = new LinearLayoutManager(getActivity());
+        mRecyclerView.setLayoutManager(mLayoutManager);
+        mRecyclerView.scrollToPosition(scrollPosition);
+    }//end
 
 
     // TODO: Rename method, update argument and hook method into UI event
