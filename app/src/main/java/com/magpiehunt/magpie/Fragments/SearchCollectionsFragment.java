@@ -1,9 +1,9 @@
 package com.magpiehunt.magpie.Fragments;
 
-import android.app.Fragment;
 import android.content.Context;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -13,10 +13,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.magpiehunt.magpie.Adapters.CollectionAdapter;
-import com.magpiehunt.magpie.Database.MagpieDatabase;
+import com.magpiehunt.magpie.Adapters.SearchCollectionAdapter;
 import com.magpiehunt.magpie.Entities.Collection;
-import com.magpiehunt.magpie.Entities.Landmark;
 import com.magpiehunt.magpie.R;
 import com.magpiehunt.magpie.WebClient.ApiService;
 import com.magpiehunt.magpie.WebClient.ServiceGenerator;
@@ -36,7 +34,7 @@ import retrofit2.Response;
  * Use the {@link SearchCollectionsFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class SearchCollectionsFragment extends Fragment {
+public class SearchCollectionsFragment extends Fragment{
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
@@ -46,7 +44,7 @@ public class SearchCollectionsFragment extends Fragment {
 
 
     protected RecyclerView mRecyclerView;
-    protected CollectionAdapter mModelAdapter;
+    protected SearchCollectionAdapter mModelAdapter;
     protected RecyclerView.LayoutManager mLayoutManager;
     protected List<Collection> collections;
     protected Context context;
@@ -115,7 +113,7 @@ public class SearchCollectionsFragment extends Fragment {
             public void onResponse(Call<List<Collection>> call, Response<List<Collection>> response) {
                 collections = response.body();
                // collections = callCollections;
-                mModelAdapter = new CollectionAdapter(collections, SearchCollectionsFragment.TAG, context);
+                mModelAdapter = new SearchCollectionAdapter(collections, SearchCollectionsFragment.TAG, context);
                 // Set the adapter for RecyclerView.
                 mRecyclerView.setAdapter(mModelAdapter);
                 mRecyclerView.setItemAnimator(new DefaultItemAnimator());
@@ -133,35 +131,10 @@ public class SearchCollectionsFragment extends Fragment {
     }
 
 
+
     //This method adds a collection to magpieDB as well as any associated landmarks
-    private void addCollectionToDB(Collection c)
-    {
-        final MagpieDatabase db = MagpieDatabase.getMagpieDatabase(this.getActivity());
-        db.collectionDao().addCollection(c);
-
-        ApiService apiService = ServiceGenerator.createService(ApiService.class);
-
-        Call<List<Landmark>> call = apiService.getLandmarks(c.getCID());
-
-        call.enqueue(new Callback<List<Landmark>>() {
-            @Override
-            public void onResponse(Call<List<Landmark>> call, Response<List<Landmark>> response) {
-                List<Landmark> landmarks = response.body();
-                for(Landmark l: landmarks)
-                    db.landmarkDao().addLandmark(l);
-            }
-
-            @Override
-            public void onFailure(Call<List<Landmark>> call, Throwable t) {
-
-            }
-        });
 
 
-        List<Collection> collections = db.collectionDao().getCollections();
-
-
-    }
     public void setRecyclerViewLayoutManager() {
         int scrollPosition = 0;
 
