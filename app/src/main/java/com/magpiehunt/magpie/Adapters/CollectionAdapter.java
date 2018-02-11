@@ -6,22 +6,13 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.magpiehunt.magpie.Database.MagpieDatabase;
 import com.magpiehunt.magpie.Entities.Collection;
-import com.magpiehunt.magpie.Entities.Landmark;
 import com.magpiehunt.magpie.R;
-import com.magpiehunt.magpie.WebClient.ApiService;
-import com.magpiehunt.magpie.WebClient.ServiceGenerator;
 
 import java.util.List;
-
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
 
 /**
  * Created by Blake Impecoven on 1/22/18.
@@ -60,7 +51,6 @@ public class CollectionAdapter extends RecyclerView.Adapter<CollectionAdapter.Co
         // fields for CardView (Expanded)
         private TextView description;
         private TextView rating;
-        private Button addBtn;
         private String fragmentTag;
 
         public CollectionHolder(View itemView, String fragmentTag) {
@@ -69,7 +59,6 @@ public class CollectionAdapter extends RecyclerView.Adapter<CollectionAdapter.Co
             this.collectionAbbreviation = (TextView)itemView.findViewById(R.id.tvAbbreviation);
             this.imgThumb = (ImageView)itemView.findViewById(R.id.img_thumb);
             this.imgArrow = (ImageView)itemView.findViewById(R.id.expandArrow);
-            this.addBtn = (Button)itemView.findViewById(R.id.addBtn);
             this.fragmentTag = fragmentTag;
         }//end DVC
 
@@ -87,8 +76,6 @@ public class CollectionAdapter extends RecyclerView.Adapter<CollectionAdapter.Co
 
             this.position = position;
             this.currentObject = currentObject;
-            if(fragmentTag.equals("SearchCollectionsFrag"))
-                this.addBtn.setVisibility(View.VISIBLE);
 
             setListeners(); // uncomment when click functionality implemented.
         }//end setData
@@ -97,7 +84,6 @@ public class CollectionAdapter extends RecyclerView.Adapter<CollectionAdapter.Co
             imgArrow.setOnClickListener(CollectionHolder.this);
             //TODO: change this listener to respond to a click of the whole card?
             imgThumb.setOnClickListener(CollectionHolder.this);
-            addBtn.setOnClickListener(CollectionHolder.this);
         }//end setListeners
 
         @Override
@@ -117,9 +103,7 @@ public class CollectionAdapter extends RecyclerView.Adapter<CollectionAdapter.Co
 //                case delete item:
 //                    removeItem(position);
 //                    break;
-                case R.id.addBtn:
-                    addCollectionToDB(this.currentObject);
-                    break;
+
                 default:
                     break;
             }//end switch
@@ -140,6 +124,11 @@ public class CollectionAdapter extends RecyclerView.Adapter<CollectionAdapter.Co
         }//end addItem
 
     }//end inner class: CollectionHolder
+
+
+
+
+
 
     public CollectionAdapter(List<Collection> collectionList, String fragmentTag, Context context) {
         this.collectionList = collectionList;
@@ -170,34 +159,6 @@ public class CollectionAdapter extends RecyclerView.Adapter<CollectionAdapter.Co
     @Override
     public int getItemCount() {
         return collectionList.size();
-    }
-    private void addCollectionToDB(Collection c)
-    {
-        final MagpieDatabase db = MagpieDatabase.getMagpieDatabase(context);
-        db.collectionDao().addCollection(c);
-
-        ApiService apiService = ServiceGenerator.createService(ApiService.class);
-
-        Call<List<Landmark>> call = apiService.getLandmarks(c.getCID());
-
-        call.enqueue(new Callback<List<Landmark>>() {
-            @Override
-            public void onResponse(Call<List<Landmark>> call, Response<List<Landmark>> response) {
-                List<Landmark> landmarks = response.body();
-                if(landmarks!= null) {
-                    for (Landmark l : landmarks)
-                        db.landmarkDao().addLandmark(l);
-                }
-            }
-
-            @Override
-            public void onFailure(Call<List<Landmark>> call, Throwable t) {
-
-            }
-        });
-
-        List<Collection> collections = db.collectionDao().getCollections();
-
     }
 
 }//end CollectionAdapter

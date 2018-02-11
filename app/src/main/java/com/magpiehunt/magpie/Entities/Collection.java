@@ -20,7 +20,7 @@ public class Collection{
     private int cID;
     @SerializedName("Available")
     @Expose
-    private boolean available;
+    private int available;
     @SerializedName("Name")
     @Expose
     private String name;
@@ -57,13 +57,13 @@ public class Collection{
         this.cID = CID;
     }
 
-    public boolean isAvailable() {
+    public void setAvailable(int available) {
+        this.available = available;
+    }
+    public int getAvailable() {
         return available;
     }
 
-    public void setAvailable(boolean available) {
-        this.available = available;
-    }
 
     public String getName() {
         return name;

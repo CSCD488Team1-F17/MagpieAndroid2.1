@@ -1,14 +1,14 @@
 package com.magpiehunt.magpie;
 
 
-import android.app.Fragment;
-import android.app.FragmentManager;
-import android.app.FragmentTransaction;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomNavigationView;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -91,13 +91,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
         //Create bottom navigation bar to switch between app pages
         bottomNavigationView = findViewById(R.id.navigation);
         bottomNavigationView.setSelectedItemId(R.id.menu_home);
+
         setupFragments();
-
-       // MagpieDatabase db = MagpieDatabase.getMagpieDatabase(this);
-        //log.e(TAG, db.collectionDao().getCollection(1).getName());
-
-
-
     }//end onCreate
 
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -140,14 +135,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
     // bar and sets up the listener for the navigation bar.
     private void setupFragments()
     {
-        /*final MyCollectionsFragment myCollectionsFragment = MyCollectionsFragment.newInstance();
-        final GoogleMapFragment mapFragment = GoogleMapFragment.newInstance();
-        final QRFragment qrFragment = QRFragment.newInstance();
-        final SearchCollectionsFragment searchCollectionsFragment = SearchCollectionsFragment.newInstance();
-        final PrizesFragment prizesFragment = PrizesFragment.newInstance();*/
-        fragmentManager = getFragmentManager();
-        FragmentTransaction transaction = fragmentManager.beginTransaction();
-        transaction.add(R.id.fragment_container, MyCollectionsFragment.newInstance()).commit();
         bottomNavigationView.setOnNavigationItemSelectedListener(
                 new BottomNavigationView.OnNavigationItemSelectedListener() {
                     @Override
@@ -171,12 +158,17 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
                                 fragment = PrizesFragment.newInstance();
                                 break;
                         }
+                        fragmentManager = getSupportFragmentManager();
                         replace = fragmentManager.beginTransaction().replace(R.id.fragment_container, fragment);
-                        replace.addToBackStack(null);
+                        //replace.addToBackStack(null);
                         replace.commit();
                         return true;
                     }
                 });
+        fragmentManager = getSupportFragmentManager();
+        FragmentTransaction transaction = fragmentManager.beginTransaction();
+        transaction.replace(R.id.fragment_container, MyCollectionsFragment.newInstance());
+        transaction.commit();
     }
 
     @Override

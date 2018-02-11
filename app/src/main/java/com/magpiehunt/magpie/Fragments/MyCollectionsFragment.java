@@ -1,9 +1,9 @@
 package com.magpiehunt.magpie.Fragments;
 
-import android.app.Fragment;
 import android.content.Context;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -77,7 +77,6 @@ public class MyCollectionsFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         magpieDatabase = MagpieDatabase.getMagpieDatabase(this.getActivity());
-        initializeData();
         if (getArguments() != null) {
             mParam1 = getArguments().getString(ARG_PARAM1);
             mParam2 = getArguments().getString(ARG_PARAM2);
@@ -90,6 +89,7 @@ public class MyCollectionsFragment extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
 
+        initializeData();
         View rootView = inflater.inflate(R.layout.fragment_my_collections, container, false);
         rootView.setTag(TAG);
 
@@ -103,8 +103,8 @@ public class MyCollectionsFragment extends Fragment {
         setRecyclerViewLayoutManager();
 
         MagpieDatabase db = MagpieDatabase.getMagpieDatabase(getActivity());
-        List<Collection> collections = db.collectionDao().getCollections();
-        mModelAdapter = new CollectionAdapter(collections, MyCollectionsFragment.TAG, this.getActivity());
+        //List<Collection> collections = db.collectionDao().getCollections();
+        mModelAdapter = new CollectionAdapter(mDataset, MyCollectionsFragment.TAG, this.getActivity());
         // Set the adapter for RecyclerView.
         mRecyclerView.setAdapter(mModelAdapter);
 
@@ -170,13 +170,13 @@ public class MyCollectionsFragment extends Fragment {
     private void initializeData() {
         mDataset = new ArrayList<>();
 
-        mDataset = MagpieDatabase.getMagpieDatabase(this.getActivity()).collectionDao().getCollections();
-/*
+        mDataset.addAll(MagpieDatabase.getMagpieDatabase(this.getActivity()).collectionDao().getCollections());
+
         Collection testCollection = new Collection();
         testCollection.setName("Test Walk Talk");
         testCollection.setAbbreviation("TWT");
         mDataset.add(testCollection);
-
+/*
         testCollection = new Collection();
         testCollection.setName("Walk Test Mag");
         testCollection.setAbbreviation("WTM");

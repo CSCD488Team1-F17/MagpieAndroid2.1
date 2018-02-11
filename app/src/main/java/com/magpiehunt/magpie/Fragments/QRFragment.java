@@ -3,7 +3,7 @@ package com.magpiehunt.magpie.Fragments;
 import android.content.Context;
 import android.net.Uri;
 import android.os.Bundle;
-import android.app.Fragment;
+import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -35,14 +35,7 @@ public class QRFragment extends Fragment {
         // Required empty public constructor
     }
 
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment QRFragment.
-     */
+    
     // TODO: Rename and change types and number of parameters
     public static QRFragment newInstance() {
         QRFragment fragment = new QRFragment();

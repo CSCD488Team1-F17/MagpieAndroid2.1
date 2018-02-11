@@ -11,7 +11,7 @@ import com.google.gson.annotations.SerializedName;
  * Created by James on 1/10/2018.
  */
 
-@Entity(tableName = "Landmarks", foreignKeys = @ForeignKey(
+@Entity(tableName = "Landmarks" , foreignKeys = @ForeignKey(
                                             entity = Collection.class,
                                             parentColumns = "cID",
                                             childColumns = "cID"))
