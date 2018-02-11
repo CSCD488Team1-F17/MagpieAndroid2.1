@@ -18,7 +18,6 @@ import android.view.MenuItem;
 import android.widget.Toast;
 
 import com.firebase.ui.auth.IdpResponse;
-import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.firebase.auth.FirebaseAuth;
@@ -136,18 +135,19 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
         }
     }*/
 
+    //TODO use new instance instead of new object
     //this method creates the fragments for each page accessible from the bottom navigation
     // bar and sets up the listener for the navigation bar.
     private void setupFragments()
     {
-        final MyCollectionsFragment myCollectionsFragment = new MyCollectionsFragment();
-        final GoogleMapFragment mapFragment = new GoogleMapFragment();
-        final QRFragment qrFragment = new QRFragment();
-        final SearchCollectionsFragment searchCollectionsFragment = new SearchCollectionsFragment();
-        final PrizesFragment prizesFragment = new PrizesFragment();
+        /*final MyCollectionsFragment myCollectionsFragment = MyCollectionsFragment.newInstance();
+        final GoogleMapFragment mapFragment = GoogleMapFragment.newInstance();
+        final QRFragment qrFragment = QRFragment.newInstance();
+        final SearchCollectionsFragment searchCollectionsFragment = SearchCollectionsFragment.newInstance();
+        final PrizesFragment prizesFragment = PrizesFragment.newInstance();*/
         fragmentManager = getFragmentManager();
         FragmentTransaction transaction = fragmentManager.beginTransaction();
-        transaction.add(R.id.fragment_container, myCollectionsFragment).commit();
+        transaction.add(R.id.fragment_container, MyCollectionsFragment.newInstance()).commit();
         bottomNavigationView.setOnNavigationItemSelectedListener(
                 new BottomNavigationView.OnNavigationItemSelectedListener() {
                     @Override
@@ -156,19 +156,19 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
                         fragment = null;
                         switch (item.getItemId()) {
                             case R.id.menu_map:
-                                fragment = mapFragment;
+                                fragment = GoogleMapFragment.newInstance();
                                 break;
                             case R.id.menu_qr:
-                                fragment = qrFragment;
+                                fragment =  QRFragment.newInstance();
                                 break;
                             case R.id.menu_home:
-                                fragment = myCollectionsFragment;
+                                fragment = MyCollectionsFragment.newInstance();
                                 break;
                             case R.id.menu_search:
-                                fragment = searchCollectionsFragment;
+                                fragment = SearchCollectionsFragment.newInstance();
                                 break;
                             case R.id.menu_prizes:
-                                fragment = prizesFragment;
+                                fragment = PrizesFragment.newInstance();
                                 break;
                         }
                         replace = fragmentManager.beginTransaction().replace(R.id.fragment_container, fragment);
@@ -184,12 +184,13 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
         switch (item.getItemId()) {
             case R.id.sign_out:
                 mFirebaseAuth.signOut();
-                Auth.GoogleSignInApi.signOut(mGoogleApiClient);
+                //Auth.GoogleSignInApi.signOut(mGoogleApiClient);
                 mFirebaseUser = null;
                 mUsername = null;
                 mPhotoUrl = null;
                 startActivity(new Intent(this, SignInActivity.class));
                 return true;
+
             default:
                 return super.onOptionsItemSelected(item);
         }//end switch
