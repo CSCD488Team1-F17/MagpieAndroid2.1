@@ -85,6 +85,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
             }//end if
         }//end if/else
 
+
         // Firebase Database Initialization - Soon to come...
 //        mFirebaseDatabaseReference = FirebaseDatabase.getInstance().getReference();
 
