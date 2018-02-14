@@ -20,6 +20,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.location.LocationRequest;
@@ -28,13 +29,18 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.UiSettings;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.magpiehunt.magpie.Entities.Landmark;
 import com.magpiehunt.magpie.Helper.GPSTracker;
+import com.magpiehunt.magpie.Helper.MapLocationInfoWindow;
 import com.magpiehunt.magpie.R;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.List;
 
 import static android.content.Context.LOCATION_SERVICE;
 
@@ -49,30 +55,38 @@ import static android.content.Context.LOCATION_SERVICE;
  */
 //TODO handle denied permissions requests
 //Fix map not reloading on reload of map fragment
-public class GoogleMapFragment extends Fragment
+public class GoogleMapFragment extends Fragment //implements OnViewCollectionListener
+    //if you want to send data to this fragment use the following code
+    /*
+    private OnFragmentInteractionsListener mListener;
+
+    //then inside a function call
+    mListener.onFragmentInteraction(List<LatLon> locations);
+
+     */
         implements OnMapReadyCallback/*, LocationSource.OnLocationChangedListener*/ {
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
+    //private static final String ARG_PARAM1 = "param1";
+    //private static final String ARG_PARAM2 = "param2";
 
     //private bool hasPosition, mapActive;
+    public List<Landmark> landmarks;
     private MenuItem addLocButton, saveLocButton;
     private float zoom;
-    private ArrayList<MarkerOptions> marks;
+    private MapLocationInfoWindow infoWindow;
+    private Marker selectedMarker = null;//could be used in the future to allow for updating distance to location
     private ArrayList<Marker> markerList;
     private final int PERMISSION_REQUEST = 1;
-    private GoogleMap gMap;
-    //private FusedLocationProviderClient fusedLoc;
+    private GoogleMap gMap = null;
     private Location currLoc;
     private OnFragmentInteractionListener mListener;
-    //private GoogleMapFragment mapFrag;
     private LatLng start = null;//curr loc
     GPSTracker gpsTracker;
 
     // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
+    //private String mParam1;
+    //private String mParam2;
 
     public GoogleMapFragment() {
         // Required empty public constructor
@@ -94,16 +108,25 @@ public class GoogleMapFragment extends Fragment
     }
 
     @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        if (context instanceof OnFragmentInteractionListener) {
+            mListener = (OnFragmentInteractionListener) context;
+        } else {
+            throw new RuntimeException(context.toString() + " must implement OnFragmentInteractionListener");
+        }
+    }
+
+    @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        //setContentView(R.layout.activity_main);
-        currLoc = new Location((LocationManager.GPS_PROVIDER));
-        setHasOptionsMenu(true);
 
-
+        //set header information
         Toolbar toolbar = getActivity().findViewById(R.id.my_toolbar);
         toolbar.setTitle("Map View");
+        setHasOptionsMenu(true);
 
+        //check permissions
         ActivityCompat.requestPermissions(getActivity(),
                 new java.lang.String[]{android.Manifest.permission.ACCESS_FINE_LOCATION}, 1);
         LocationListener mLocationListener = new LocationListener() {
@@ -129,17 +152,18 @@ public class GoogleMapFragment extends Fragment
             }
         };
         LocationManager mLocationManager = (LocationManager)getActivity().getSystemService(LOCATION_SERVICE);
+        infoWindow = new MapLocationInfoWindow(getContext());
+        currLoc = new Location((LocationManager.GPS_PROVIDER));
         if(ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION) ==
                 PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getActivity(),
                 Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED){
             mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 5000, 10, mLocationListener);
         }
 
-        //fusedLoc = LocationServices.getFusedLocationProviderClient(getActivity());
         markerList = new ArrayList<Marker>();
         if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
+            //mParam1 = getArguments().getString(ARG_PARAM1);
+            //mParam2 = getArguments().getString(ARG_PARAM2);
         }
 
         if(savedInstanceState != null){
@@ -147,7 +171,6 @@ public class GoogleMapFragment extends Fragment
         }
         else{
             zoom = -1;
-            marks = new ArrayList<MarkerOptions>();
         }
     }
 
@@ -204,6 +227,19 @@ public class GoogleMapFragment extends Fragment
                 return;
             }
         }
+        gMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
+            @Override
+            public boolean onMarkerClick(Marker marker) {
+                Location pressedLocation = new Location("");
+                pressedLocation.setLatitude(marker.getPosition().latitude);
+                pressedLocation.setLongitude(marker.getPosition().longitude);
+                double distanceInMeters = currLoc.distanceTo(pressedLocation);
+                marker.setSnippet(roundFloat((float)distanceInMeters, 2) + " meters to Location.");
+                marker.showInfoWindow();
+                selectedMarker = marker;
+                return false;//this allows default behavior to take place
+            }
+        });
         UiSettings mapSettings = gMap.getUiSettings();
         mapSettings.setZoomControlsEnabled(true);
         mapSettings.setCompassEnabled(true);
@@ -211,21 +247,7 @@ public class GoogleMapFragment extends Fragment
         if(zoom != -1){
             gMap.animateCamera(CameraUpdateFactory.zoomTo(zoom));
         }
-        for(MarkerOptions m: marks){
-            markerList.add(gMap.addMarker(m));
-        }
-
-        /*Runnable runnable = new Runnable() {
-            @Override
-            public void run() {
-                Location loc = getLocation();
-                if(loc != null){moveToLocation(loc);}
-            }
-        };
-        Handler handler = new Handler();
-        handler.postDelayed(runnable, 200); //call functions in runn avter delay*/
-        //int res = ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION);
-        if(checkLocationPermission()/*res == PackageManager.PERMISSION_GRANTED*/) {
+        if(checkLocationPermission()) {
             Log.d("onResume OK", "");
             gpsTracker = new GPSTracker(getActivity());
             if (gpsTracker.canGetLocation()) {
@@ -235,21 +257,11 @@ public class GoogleMapFragment extends Fragment
                 moveToLocation(currLoc);
                 double meters = 150;
                 double coef = meters * 0.0000089;
-                //double new_lat = my_lat + coef;
                 placeMarker(new LatLng(currLoc.getLatitude() + coef, currLoc.getLongitude()), "Test Marker");
             } else {
                 Toast.makeText(getActivity(), "Permissions required to proceed.", Toast.LENGTH_SHORT).show();
-                //finish();
-                //gpsTracker.showSettingsAlert();
-                //do something
+                //finish();//do something
             }
-        }
-    }
-
-    // TODO: Rename method, update argument and hook method into UI event
-    public void onButtonPressed(Uri uri) {
-        if (mListener != null) {
-            mListener.onFragmentInteraction(uri);
         }
     }
 
@@ -257,7 +269,7 @@ public class GoogleMapFragment extends Fragment
     public boolean onOptionsItemSelected(MenuItem item){
         switch(item.getItemId()){
             case R.id.add_location:
-                addLocation();
+                addCurrentLocation();
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -285,23 +297,12 @@ public class GoogleMapFragment extends Fragment
     }
 
     private void placeMarker(LatLng loc, String title){
-        gMap.addMarker(new MarkerOptions().position(loc).title(title));
+        gMap.addMarker(new MarkerOptions().position(loc).title(title).icon(BitmapDescriptorFactory.defaultMarker(190)));
     }
 
 
-    private void addLocation(){
+    private void addCurrentLocation(){
         placeMarker(new LatLng(currLoc.getLatitude(), currLoc.getLongitude()), "New Loc");
-    }
-
-    @Override
-    public void onAttach(Context context) {
-        super.onAttach(context);
-        if (context instanceof OnFragmentInteractionListener) {
-            mListener = (OnFragmentInteractionListener) context;
-        } else {
-            throw new RuntimeException(context.toString()
-                    + " must implement OnFragmentInteractionListener");
-        }
     }
 
     @Override
@@ -339,9 +340,31 @@ public class GoogleMapFragment extends Fragment
     public interface OnFragmentInteractionListener {
         // TODO: Update argument type and name
         void onFragmentInteraction(Uri uri);
+    }//*/
+    /*public void OnViewCollectionListener(){
+        //public void on
+    }//*/
+
+    //try using this to get the fragment
+    //getFragmentManager().findFragmentById(R.id.google_map_fragment);
+    //and then call this function with required landmarks to display data
+    public void displayCollection(List<Landmark> newCollection){
+        landmarks = newCollection;
+        if(gMap != null){
+            for (Landmark l: landmarks) {
+                showLandmark(l);
+            }
+        }
     }
 
     //helper functions==========================
+    private void showLandmark(Landmark landmark){
+        MarkerOptions opt = new MarkerOptions();
+        opt.position(new LatLng(landmark.getLatitude(), landmark.getLongitude()));
+        opt.title(landmark.getLandmarkName());
+        gMap.addMarker(opt);
+    }
+
     private boolean hasPermission(){
         if(ActivityCompat.checkSelfPermission(getActivity(), android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
                 && ActivityCompat.checkSelfPermission(getActivity(), android.Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED){
@@ -363,14 +386,14 @@ public class GoogleMapFragment extends Fragment
         }
     }
 
-    public void markPressed(View v){
+    /*public void markPressed(View v){
         Location l = getLocation();
         LatLng coords = new LatLng(l.getLatitude(), l.getLongitude());
         marks.add(new MarkerOptions());
         marks.get(marks.size() - 1).position(coords);
         marks.get(marks.size() - 1).title("Mark " + marks.size());
         gMap.addMarker(marks.get(marks.size() - 1));
-    }
+    }//*/
 
     private Location getLocation(){
         LocationRequest lr = new LocationRequest();
@@ -384,5 +407,13 @@ public class GoogleMapFragment extends Fragment
     private void moveToLocation(Location l){
         LatLng coords = new LatLng(l.getLatitude(), l.getLongitude());
         gMap.animateCamera(CameraUpdateFactory.newLatLngZoom(coords, 14));
+    }
+
+    //code copied from:
+    //https://stackoverflow.com/questions/8911356/whats-the-best-practice-to-round-a-float-to-2-decimals
+    private static float roundFloat(float d, int decimal){
+        BigDecimal bd = new BigDecimal(Float.toString(d));
+        bd = bd.setScale(decimal, BigDecimal.ROUND_HALF_UP);
+        return bd.floatValue();
     }
 }
