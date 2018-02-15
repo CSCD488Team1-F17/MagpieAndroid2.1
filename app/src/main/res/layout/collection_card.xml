@@ -1,19 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.v7.widget.CardView
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:card_view="http://schemas.android.com/apk/res-auto"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_marginTop="4dp"
+    android:layout_marginBottom="4dp"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginBottom="1dp">
+    android:background="@color/colorMagpieWhite">
 
     <LinearLayout
+        android:id="@+id/card_collection"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@color/colorMagpieWhite"
         android:orientation="horizontal">
 
         <ImageView
-            android:id="@+id/img_thumb"
+            android:id="@+id/img_thumb_collection"
             android:layout_width="60dp"
             android:layout_height="60dp"
             android:layout_margin="7dp"
@@ -26,7 +28,7 @@
             android:layout_weight="4">
 
             <TextView
-                android:id="@+id/tvAbbreviation"
+                android:id="@+id/tvAbbreviation_collection"
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
                 android:layout_marginTop="1dp"
@@ -39,7 +41,7 @@
                 android:typeface="sans" />
 
             <TextView
-                android:id="@+id/tvTitle"
+                android:id="@+id/tvTitle_collection"
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
                 android:layout_marginBottom="5dp"
@@ -53,7 +55,7 @@
         </LinearLayout>
 
         <ImageView
-            android:id="@+id/expandArrow"
+            android:id="@+id/expandArrow_collection"
             android:layout_width="20dp"
             android:layout_height="20dp"
             android:layout_weight="1"
@@ -61,9 +63,30 @@
             android:layout_gravity="center"
             android:src="@drawable/temp_dropdown_arrow_down"/>
 
-
-
-
     </LinearLayout>
 
-</android.support.v7.widget.CardView>
+    <com.github.aakira.expandablelayout.ExpandableLinearLayout
+        android:id="@+id/expandableLayout_collection"
+        android:layout_below="@id/card_collection"
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="74dp"
+        android:layout_marginRight="24dp"
+        app:ael_duration="800"
+        app:ael_expanded="false"
+        app:ael_interpolator="bounce">
+
+        <include
+            android:id="@+id/dropdown_information_collection"
+            layout="@layout/dropdown_data_collections"/>
+
+    </com.github.aakira.expandablelayout.ExpandableLinearLayout>
+
+    <View
+        android:layout_below="@id/expandableLayout_collection"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/colorMagpieLightGray"/>
+
+</RelativeLayout>

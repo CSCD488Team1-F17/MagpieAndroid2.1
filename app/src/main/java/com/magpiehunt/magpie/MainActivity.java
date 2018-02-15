@@ -23,8 +23,8 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.magpiehunt.magpie.Fragments.CollectionFragment;
 import com.magpiehunt.magpie.Fragments.GoogleMapFragment;
-import com.magpiehunt.magpie.Fragments.MyCollectionsFragment;
 import com.magpiehunt.magpie.Fragments.PrizesFragment;
 import com.magpiehunt.magpie.Fragments.QRFragment;
 import com.magpiehunt.magpie.Fragments.SearchCollectionsFragment;
@@ -34,7 +34,7 @@ import com.magpiehunt.magpie.Fragments.SearchCollectionsFragment;
  * Date:    11/14/17.
  */
 
-public class MainActivity extends AppCompatActivity implements GoogleApiClient.OnConnectionFailedListener, MyCollectionsFragment.OnFragmentInteractionListener, GoogleMapFragment.OnFragmentInteractionListener, QRFragment.OnFragmentInteractionListener, SearchCollectionsFragment.OnFragmentInteractionListener,PrizesFragment.OnFragmentInteractionListener {
+public class MainActivity extends AppCompatActivity implements GoogleApiClient.OnConnectionFailedListener, CollectionFragment.OnFragmentInteractionListener, GoogleMapFragment.OnFragmentInteractionListener, QRFragment.OnFragmentInteractionListener, SearchCollectionsFragment.OnFragmentInteractionListener,PrizesFragment.OnFragmentInteractionListener {
 
     private static final String TAG = "MainActivity";
     private static final int RC_SIGN_IN = 123;
@@ -140,7 +140,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
     // bar and sets up the listener for the navigation bar.
     private void setupFragments()
     {
-        final MyCollectionsFragment myCollectionsFragment = new MyCollectionsFragment();
+        final CollectionFragment myCollectionsFragment = new CollectionFragment();
         final GoogleMapFragment mapFragment = new GoogleMapFragment();
         final QRFragment qrFragment = new QRFragment();
         final SearchCollectionsFragment searchCollectionsFragment = new SearchCollectionsFragment();
